@@ -11,13 +11,13 @@ import Calendar from './pages/Calendar';
 import Meetings from './pages/Meetings';
 import Tasks from './pages/Tasks';
 import Collaboration from './pages/Collaboration';
-import Workspace from './pages/Workspace';
+import Workspace from './pages/Workspace'; // Your new Dashboard View
 import MeetingRoom from './pages/MeetingRoom';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Recording from './pages/Recording'; 
 import MeetingSummaryDetail from './pages/MeetingSummaryDetail';
-import Space from './pages/Space';
+import Space from './pages/Space'; // Your new Chat View
 import Video from './pages/Video';
 import MeetingSummary from './pages/Meeting-Summary'; 
 import MeetingHistory from './pages/MeetingHistory';
@@ -31,7 +31,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isVideo = location.pathname === '/video';
   const isRecording = location.pathname === '/recording'; 
   
-  // Workspaces and Spaces usually have their own internal navigation
+  // These routes have their own internal sidebars, so we hide the main App sidebar
   const isWorkspace = location.pathname.startsWith('/workspace');
   const isSpace = location.pathname.startsWith('/space');
 

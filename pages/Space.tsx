@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, MessageCircle, Search, MoreVertical, ChevronLeft } from 'lucide-react';
+import { 
+  ChevronDown, MessageCircle, Search, MoreVertical, ChevronLeft, 
+  Filter, ThumbsUp, CheckCircle, BarChart2, Plus, Users, X, Send,
+  Trash2, HelpCircle, FileText, Tag
+} from 'lucide-react';
 
+// --- Types ---
 interface Discussion {
   id: number;
   author: string;
@@ -13,16 +18,79 @@ interface Discussion {
   attendees: number;
   files: number;
   description: string;
+  comments?: Comment[];
+}
+
+interface Comment {
+  id: number;
+  author: string;
+  avatar: string;
+  text: string;
+  date: string;
+}
+
+interface Answer {
+  id: number;
+  author: string;
+  avatar: string;
+  text: string;
+  date: string;
+  votes: number;
+  isAccepted?: boolean;
+}
+
+interface Question {
+  id: number;
+  author: string;
+  avatar: string;
+  question: string;
+  details?: string;
+  votes: number;
+  answersCount: number;
+  date: string;
+  isAnswered: boolean;
+  answersList?: Answer[];
+}
+
+interface Poll {
+  id: number;
+  author: string;
+  avatar: string;
+  question: string;
+  totalVotes: number;
+  options: { label: string; percent: number; count: number; isWinner?: boolean }[];
+  date: string;
 }
 
 const Space: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('discussions');
-  const [activeDiscussionTab, setActiveDiscussionTab] = useState('summary');
+  
+  // Navigation State
+  const [activeTab, setActiveTab] = useState('discussions'); 
+  
+  // Data State
   const [selectedDiscussion, setSelectedDiscussion] = useState<Discussion | null>(null);
-  const [showDiscussionView, setShowDiscussionView] = useState(false);
-  const [selectedSidebarSpace, setSelectedSidebarSpace] = useState('general');
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  
+  // Modal States
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
+  const [showCreateDiscussion, setShowCreateDiscussion] = useState(false); // NEW
+  const [showCreateQuestion, setShowCreateQuestion] = useState(false);     // NEW
+  
+  // Form States
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+  const [newDiscussionTitle, setNewDiscussionTitle] = useState('');
+  const [newDiscussionDesc, setNewDiscussionDesc] = useState('');
+  const [newDiscussionType, setNewDiscussionType] = useState('Discussion');
+  const [newQuestionText, setNewQuestionText] = useState('');
+  const [newQuestionDetails, setNewQuestionDetails] = useState('');
 
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('All');
+
+  // --- MOCK DATA ---
   const discussions: Discussion[] = [
     {
       id: 1,
@@ -34,19 +102,26 @@ const Space: React.FC = () => {
       replies: 12,
       attendees: 5,
       files: 3,
-      description: 'Discussed Q1 roadmap and assigned action items for product development. Team agreed on timeline and deliverables.'
+      description: 'Discussed Q1 roadmap and assigned action items for product development. Team agreed on timeline and deliverables.',
+      comments: [
+        { id: 1, author: 'Mike Ross', avatar: 'https://i.pravatar.cc/100?img=8', text: 'I will handle the API documentation update by Friday.', date: '2:45 PM' },
+        { id: 2, author: 'Sarah Johnson', avatar: 'https://i.pravatar.cc/100?img=1', text: 'Thanks Mike! Make sure to sync with the frontend team.', date: '2:50 PM' }
+      ]
     },
     {
       id: 2,
       author: 'Michael Chen',
       title: 'Design System Updates & Component Library',
-      type: 'BREAKOUT ROOM: Design Team',
+      type: 'BREAKOUT ROOM',
       date: 'Yesterday 4:15 PM',
       avatar: 'https://i.pravatar.cc/100?img=2',
       replies: 8,
       attendees: 3,
       files: 6,
-      description: 'Breakout room discussion on design system improvements. Team shared new component designs and gathered feedback.'
+      description: 'Breakout room discussion on design system improvements. Team shared new component designs and gathered feedback.',
+      comments: [
+         { id: 1, author: 'Emma Davis', avatar: 'https://i.pravatar.cc/100?img=3', text: 'Love the new color palette!', date: 'Yesterday 5:00 PM' }
+      ]
     },
     {
       id: 3,
@@ -74,34 +149,141 @@ const Space: React.FC = () => {
     }
   ];
 
+  const questions: Question[] = [
+    {
+      id: 1,
+      author: 'Jane Doe',
+      avatar: 'https://i.pravatar.cc/100?img=5',
+      question: 'What is the standard padding for mobile cards in our new design system?',
+      details: 'I am implementing the new mobile view for the dashboard and the Figma specs seem inconsistent. Is it 16px or 12px?',
+      votes: 14,
+      answersCount: 3,
+      date: '2 hours ago',
+      isAnswered: true,
+      answersList: [
+        { 
+          id: 101, 
+          author: 'Michael Chen', 
+          avatar: 'https://i.pravatar.cc/100?img=2', 
+          text: 'It is 16px for all mobile containers. We updated the global tokens yesterday.', 
+          date: '1 hour ago', 
+          votes: 8,
+          isAccepted: true 
+        },
+        { 
+          id: 102, 
+          author: 'Alex Smith', 
+          avatar: 'https://i.pravatar.cc/100?img=12', 
+          text: 'Make sure to use the `p-4` utility class if you are using Tailwind.', 
+          date: '45 mins ago', 
+          votes: 2 
+        }
+      ]
+    },
+    {
+      id: 2,
+      author: 'John Smith',
+      avatar: 'https://i.pravatar.cc/100?img=6',
+      question: 'Are we deprecating the v1 authentication endpoints in the next sprint?',
+      details: 'I see some deprecation warnings in the logs but I do not recall seeing a ticket for this.',
+      votes: 8,
+      answersCount: 0,
+      date: '5 hours ago',
+      isAnswered: false,
+      answersList: []
+    }
+  ];
+
+  const polls: Poll[] = [
+    {
+      id: 1,
+      author: 'Sarah Chen',
+      avatar: 'https://i.pravatar.cc/100?img=1',
+      question: 'When should we schedule the weekly sync?',
+      totalVotes: 24,
+      date: '1 day ago',
+      options: [
+        { label: 'Monday 9AM', percent: 15, count: 4 },
+        { label: 'Monday 2PM', percent: 60, count: 14, isWinner: true },
+        { label: 'Tuesday 10AM', percent: 25, count: 6 },
+      ]
+    },
+    {
+      id: 2,
+      author: 'Mike Ross',
+      avatar: 'https://i.pravatar.cc/100?img=8',
+      question: 'Which frontend framework should we use for the new dashboard widget?',
+      totalVotes: 18,
+      date: '3 days ago',
+      options: [
+        { label: 'React', percent: 80, count: 14, isWinner: true },
+        { label: 'Vue', percent: 10, count: 2 },
+        { label: 'Svelte', percent: 10, count: 2 },
+      ]
+    }
+  ];
+
+  // --- Handlers ---
+
   const handleOpenDiscussion = (discussion: Discussion) => {
     setSelectedDiscussion(discussion);
-    setShowDiscussionView(true);
-    setActiveDiscussionTab('summary');
   };
 
-  const handleBackToDiscussions = () => {
-    setShowDiscussionView(false);
+  const handleOpenQuestion = (question: Question) => {
+    setSelectedQuestion(question);
+  };
+
+  const handleCloseModal = () => {
     setSelectedDiscussion(null);
+    setSelectedQuestion(null);
+    setShowCreatePoll(false);
+    setShowCreateDiscussion(false);
+    setShowCreateQuestion(false);
+  };
+
+  // Poll Creator Handlers
+  const handleAddOption = () => {
+    setPollOptions([...pollOptions, '']);
+  };
+
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...pollOptions];
+    newOptions[index] = value;
+    setPollOptions(newOptions);
+  };
+
+  const handleDeleteOption = (index: number) => {
+    if (pollOptions.length > 2) {
+        const newOptions = pollOptions.filter((_, i) => i !== index);
+        setPollOptions(newOptions);
+    }
   };
 
   const getBadgeColor = (type: string) => {
-    if (type.includes('Meeting')) return 'bg-blue-100 text-blue-700';
-    if (type.includes('BREAKOUT')) return 'bg-purple-100 text-purple-700';
-    if (type.includes('Discussion')) return 'bg-green-100 text-green-700';
-    if (type.includes('Question')) return 'bg-orange-100 text-orange-700';
-    return 'bg-gray-100 text-gray-700';
+    if (type.includes('Meeting')) return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+    if (type.includes('BREAKOUT')) return 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
+    if (type.includes('Discussion')) return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+    if (type.includes('Question')) return 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
+    return 'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-300';
   };
 
+  // Filter Logic
+  const filteredDiscussions = discussions.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterType === 'All' || item.type.includes(filterType);
+    return matchesSearch && matchesFilter;
+  });
+
   return (
-    <div className="flex h-screen bg-white dark:bg-slate-900">
+    <div className="flex h-screen bg-white dark:bg-slate-900 relative">
+      
       {/* LEFT SIDEBAR */}
       <aside className="w-64 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex flex-col overflow-hidden">
-        {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm">S</div>
+              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">S</div>
               <span className="font-semibold text-gray-800 dark:text-white">SBIT-3K</span>
             </div>
             <button className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
@@ -109,347 +291,481 @@ const Space: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Navigation Links */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-2">
           <button
             onClick={() => navigate('/workspace')}
             className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
-            <span className="text-sm">Back to Workspace</span>
+            <span className="text-sm font-medium">Back to Workspace</span>
           </button>
         </nav>
       </aside>
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
+        
         {/* Top Header */}
-        {!showDiscussionView && (
-          <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <span className="text-yellow-500 text-lg">⭐</span>
-                <span className="font-semibold text-gray-800 dark:text-white">#{selectedSidebarSpace}</span>
-              </div>
-              <p className="text-gray-500 dark:text-slate-400 text-sm">Community Guidelines: https://promtops.notion.site/Community-Guidelines</p>
+        <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-yellow-500 text-lg">⭐</span>
+              <span className="font-bold text-gray-800 dark:text-white text-lg">Discussion Space</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-gray-600 dark:text-slate-300 text-sm">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                <span>202</span>
-              </div>
-              <button className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-                <MoreVertical className="w-5 h-5" />
-              </button>
+            <p className="hidden md:block text-gray-400 dark:text-slate-500 text-xs">Community Guidelines: notion.site/Guidelines</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 text-gray-600 dark:text-slate-300 text-sm bg-gray-50 dark:bg-slate-700/50 px-3 py-1.5 rounded-full">
+              <Users className="w-4 h-4" />
+              <span>202 Members</span>
             </div>
-          </header>
-        )}
+            <button className="p-2 text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 rounded-full hover:bg-purple-50 dark:hover:bg-slate-700 transition-colors">
+              <MoreVertical className="w-5 h-5" />
+            </button>
+          </div>
+        </header>
 
-        {!showDiscussionView && (
-          <>
-            {/* Tabs */}
-            <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 flex items-center space-x-6 overflow-x-auto flex-shrink-0">
-              {['discussions', 'questions', 'polls', 'reports'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-3 px-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                    activeTab === tab
-                      ? 'text-gray-800 dark:text-white border-gray-800 dark:border-white'
-                      : 'text-gray-600 dark:text-slate-400 border-transparent hover:text-gray-800 dark:hover:text-white'
-                  }`}
-                >
-                  {tab === 'discussions' && 'Discussions'}
-                  {tab === 'questions' && 'Questions & Answers'}
-                  {tab === 'polls' && 'Polls'}
-                  {tab === 'reports' && 'Meeting Reports'}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+        {/* Tabs Bar */}
+        <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 pt-2 flex items-center space-x-8 overflow-x-auto flex-shrink-0">
+          {['discussions', 'questions', 'polls'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3 px-1 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === tab
+                  ? 'text-purple-600 dark:text-purple-400 border-purple-600 dark:border-purple-400'
+                  : 'text-gray-500 dark:text-slate-400 border-transparent hover:text-gray-700 dark:hover:text-slate-200'
+              }`}
+            >
+              {tab === 'discussions' && 'Discussions'}
+              {tab === 'questions' && 'Questions & Answers'}
+              {tab === 'polls' && 'Polls'}
+            </button>
+          ))}
+        </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-hidden bg-white dark:bg-slate-900">
-          {!showDiscussionView ? (
-            // Threads List View
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {discussions.map((discussion) => (
-                <div
-                  key={discussion.id}
-                  className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:shadow-md dark:hover:shadow-lg transition-shadow"
-                >
-                  <div className="flex items-start space-x-3">
-                    <img
-                      src={discussion.avatar}
-                      alt="Avatar"
-                      className="w-10 h-10 rounded-full flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 flex-wrap">
-                        <span className="font-semibold text-gray-800 dark:text-white">{discussion.author}</span>
-                        <span className={`text-xs px-2 py-1 rounded font-medium ${getBadgeColor(discussion.type)}`}>
-                          {discussion.type}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-slate-400">{discussion.date}</span>
-                      </div>
-                      <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mt-1">
-                        {discussion.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-slate-400 mt-2 line-clamp-2">
-                        {discussion.description}
-                      </p>
-                      <div className="flex items-center space-x-4 mt-3 flex-wrap gap-2">
-                        <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-slate-400">
-                          <MessageCircle className="w-4 h-4" />
-                          <span>{discussion.replies} replies</span>
-                        </div>
-                        <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-slate-400">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span>{discussion.attendees} attendees</span>
-                        </div>
-                        <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-slate-400">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                          </svg>
-                          <span>{discussion.files} files</span>
-                        </div>
-                        <button
-                          onClick={() => handleOpenDiscussion(discussion)}
-                          className="ml-auto px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                        >
-                          View Summary
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+        {/* Dynamic Content Area */}
+        <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-slate-900">
+          
+          <div className="flex-1 h-full overflow-y-auto p-6">
+            
+            {/* --- SEARCH & FILTERS (Only for Discussions) --- */}
+            {activeTab === 'discussions' && (
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input 
+                    type="text" 
+                    placeholder="Search meetings, transcripts, or topics..." 
+                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:text-white"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-              ))}
-            </div>
-          ) : (
-            // Discussion View
-            selectedDiscussion && (
-              <div className="flex flex-col h-full overflow-hidden">
-                {/* Back Button */}
-                <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 flex-shrink-0">
-                  <button
-                    onClick={handleBackToDiscussions}
-                    className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium"
+                <div className="relative">
+                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <select 
+                    className="pl-10 pr-8 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none text-gray-700 dark:text-white cursor-pointer"
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    <span>Back to Discussions</span>
-                  </button>
+                    <option value="All">All Types</option>
+                    <option value="Meeting">Meetings</option>
+                    <option value="BREAKOUT">Breakout Rooms</option>
+                    <option value="Discussion">General</option>
+                  </select>
                 </div>
+                <button 
+                  onClick={() => setShowCreateDiscussion(true)} // Opens Create Modal
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Discussion
+                </button>
+              </div>
+            )}
 
-                {/* Discussion Header */}
-                <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-6 flex-shrink-0">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {selectedDiscussion.title}
-                      </h2>
-                      <div className="flex items-center space-x-3 mt-2 text-sm text-gray-600 dark:text-slate-400 flex-wrap gap-2">
-                        <span className="font-medium">{selectedDiscussion.author}</span>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getBadgeColor(selectedDiscussion.type)}`}>
-                          {selectedDiscussion.type}
-                        </span>
-                        <span>{selectedDiscussion.date}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Discussion Tabs */}
-                <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 flex items-center space-x-6 overflow-x-auto flex-shrink-0">
-                  {['summary', 'actions', 'transcript', 'chat', 'shared', 'attendance'].map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveDiscussionTab(tab)}
-                      className={`py-3 px-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                        activeDiscussionTab === tab
-                          ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400'
-                          : 'text-gray-600 dark:text-slate-400 border-transparent hover:text-gray-800 dark:hover:text-white'
-                      }`}
-                    >
-                      {tab === 'summary' && 'Meeting Summary'}
-                      {tab === 'actions' && 'Action Items'}
-                      {tab === 'transcript' && 'Transcript'}
-                      {tab === 'chat' && 'Chat'}
-                      {tab === 'shared' && 'Shared Files'}
-                      {tab === 'attendance' && 'Attendance'}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Discussion Content */}
-                <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900">
-                  {activeDiscussionTab === 'summary' && (
-                    <div className="p-6 space-y-4">
-                      <div className="flex items-start space-x-3 text-gray-700 dark:text-slate-300">
-                        <svg className="w-5 h-5 text-gray-400 dark:text-slate-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p className="text-sm">Meeting started and participants joined.</p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-6 border border-gray-200 dark:border-slate-700 mt-8">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {selectedDiscussion.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
-                              Wednesday, November 12, 2025 9:15 PM - 9:22 PM
-                            </p>
+            {/* --- TAB CONTENT: DISCUSSIONS --- */}
+            {activeTab === 'discussions' && (
+              <div className="space-y-4">
+                {filteredDiscussions.map((discussion) => (
+                  <div
+                    key={discussion.id}
+                    onClick={() => handleOpenDiscussion(discussion)}
+                    className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-start space-x-4">
+                      <img src={discussion.avatar} alt="Avatar" className="w-10 h-10 rounded-full flex-shrink-0 border-2 border-white dark:border-slate-700 shadow-sm" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                          <span className="font-semibold text-gray-900 dark:text-white">{discussion.author}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${getBadgeColor(discussion.type)}`}>
+                            {discussion.type}
+                          </span>
+                          <span className="text-xs text-gray-400 dark:text-slate-500">• {discussion.date}</span>
+                        </div>
+                        <h3 className="text-base font-bold text-gray-800 dark:text-slate-100 mt-1 group-hover:text-purple-600 transition-colors">
+                          {discussion.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-slate-400 mt-2 line-clamp-2">
+                          {discussion.description}
+                        </p>
+                        <div className="flex items-center space-x-6 mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+                          <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-slate-400">
+                            <MessageCircle className="w-4 h-4" />
+                            <span>{discussion.replies} replies</span>
                           </div>
-                          <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">
-                            View recap
+                          <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-slate-400">
+                            <Users className="w-4 h-4" />
+                            <span>{discussion.attendees} attendees</span>
+                          </div>
+                          <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-slate-400">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>{discussion.files} files</span>
+                          </div>
+                          <button className="ml-auto px-4 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors">
+                            View Summary
                           </button>
                         </div>
-                        <div className="mt-6">
-                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Content</h4>
-                          <div className="flex items-start space-x-3 p-3 bg-white dark:bg-slate-700 rounded border border-gray-200 dark:border-slate-600">
-                            <svg className="w-5 h-5 text-gray-400 dark:text-slate-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">Transcript</p>
-                              <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">6m 31s</p>
-                              <p className="text-xs text-gray-500 dark:text-slate-500 mt-2">Expires in 105 days</p>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </div>
-                  )}
-
-                  {activeDiscussionTab === 'actions' && (
-                    <div className="p-6 space-y-3">
-                      {[
-                        { task: 'Finalize feature requirements document', assigned: 'Sarah Johnson', due: '2024-02-15' },
-                        { task: 'Schedule follow-up with design team', assigned: 'Michael Chen', due: '2024-02-10' },
-                        { task: 'Update project timeline in management tool', assigned: 'Emma Davis', due: '2024-02-12' }
-                      ].map((item, idx) => (
-                        <div key={idx} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700">
-                          <input type="checkbox" className="w-4 h-4 rounded mt-0.5 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{item.task}</p>
-                            <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
-                              Assigned to: {item.assigned} • Due: {item.due}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {activeDiscussionTab === 'transcript' && (
-                    <div className="p-6">
-                      <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 border border-gray-200 dark:border-slate-700 max-h-96 overflow-y-auto">
-                        <div className="space-y-4 text-sm">
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">Sarah Johnson <span className="text-gray-600 dark:text-slate-400 font-normal">(00:15)</span></p>
-                            <p className="text-gray-700 dark:text-slate-300 mt-1">Let's start by reviewing the Q1 roadmap and our key deliverables...</p>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">Michael Chen <span className="text-gray-600 dark:text-slate-400 font-normal">(02:30)</span></p>
-                            <p className="text-gray-700 dark:text-slate-300 mt-1">I think we should prioritize the API redesign first since it impacts all other features...</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeDiscussionTab === 'chat' && (
-                    <div className="p-6 space-y-4">
-                      {[
-                        { author: 'Sarah Johnson', time: '10:30 AM', message: 'Great discussion! Let\'s finalize the timeline by EOW.', img: 1 },
-                        { author: 'Michael Chen', time: '10:35 AM', message: 'I\'ll prepare the detailed breakdown for next meeting.', img: 2 }
-                      ].map((msg, idx) => (
-                        <div key={idx} className="flex space-x-3">
-                          <img src={`https://i.pravatar.cc/100?img=${msg.img}`} alt="Avatar" className="w-8 h-8 rounded-full flex-shrink-0" />
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{msg.author}</p>
-                              <p className="text-xs text-gray-500 dark:text-slate-400">{msg.time}</p>
-                            </div>
-                            <p className="text-sm text-gray-700 dark:text-slate-300 mt-1 bg-gray-50 dark:bg-slate-800 p-3 rounded border border-gray-200 dark:border-slate-700">
-                              {msg.message}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {activeDiscussionTab === 'shared' && (
-                    <div className="p-6 space-y-3">
-                      {[
-                        { name: 'Q1-Roadmap.pdf', size: '2.4 MB', icon: 'text-red-500' },
-                        { name: 'Action-Items.xlsx', size: '1.8 MB', icon: 'text-green-500' }
-                      ].map((file, idx) => (
-                        <div key={idx} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer transition-colors">
-                          <svg className={`w-5 h-5 flex-shrink-0 ${file.icon}`} fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"></path>
-                          </svg>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{file.name}</p>
-                            <p className="text-xs text-gray-600 dark:text-slate-400">{file.size}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {activeDiscussionTab === 'attendance' && (
-                    <div className="p-6">
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        {[
-                          { num: '5', label: 'Attendees' },
-                          { num: '12', label: 'Replies' },
-                          { num: '3', label: 'Files' }
-                        ].map((stat, idx) => (
-                          <div key={idx} className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded p-4">
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.num}</p>
-                            <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">{stat.label}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="space-y-2">
-                        {[
-                          { name: 'Sarah Johnson', role: 'Organizer', img: 1 },
-                          { name: 'Michael Chen', role: 'Presenter', img: 2 },
-                          { name: 'Emma Davis', role: 'Attendee', img: 3 }
-                        ].map((person, idx) => (
-                          <div key={idx} className="flex items-center space-x-2 p-3 bg-gray-50 dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700">
-                            <img src={`https://i.pravatar.cc/100?img=${person.img}`} alt="Avatar" className="w-6 h-6 rounded-full" />
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">{person.name}</span>
-                            <span className="text-xs text-gray-600 dark:text-slate-400 ml-auto">{person.role}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
-            )
-          )}
+            )}
+
+            {/* --- TAB CONTENT: QUESTIONS & ANSWERS --- */}
+            {activeTab === 'questions' && (
+              <div className="space-y-4 max-w-4xl mx-auto">
+                 <div className="flex justify-between items-center mb-4">
+                   <h2 className="font-bold text-gray-700 dark:text-white">Recent Questions</h2>
+                   <button 
+                      onClick={() => setShowCreateQuestion(true)} // Opens Question Modal
+                      className="text-sm text-purple-600 font-medium hover:underline"
+                   >
+                      Ask a Question
+                   </button>
+                 </div>
+                 {questions.map((q) => (
+                   <div 
+                      key={q.id} 
+                      onClick={() => handleOpenQuestion(q)}
+                      className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 flex gap-4 cursor-pointer hover:border-purple-300 transition-all"
+                   >
+                      <div className="flex flex-col items-center gap-1 min-w-[60px]">
+                         <button className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded text-gray-400 hover:text-purple-600">
+                           <ThumbsUp className="w-5 h-5" />
+                         </button>
+                         <span className="font-bold text-gray-700 dark:text-slate-200">{q.votes}</span>
+                      </div>
+                      <div className="flex-1">
+                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-purple-600">{q.question}</h3>
+                         <div className="flex items-center gap-3 mt-3">
+                            {q.isAnswered && (
+                              <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                                <CheckCircle className="w-3 h-3" /> Answered
+                              </span>
+                            )}
+                            <img src={q.avatar} className="w-5 h-5 rounded-full" />
+                            <span className="text-xs text-gray-500">{q.author} • {q.date}</span>
+                         </div>
+                      </div>
+                      <div className="flex flex-col items-end justify-center">
+                         <div className="flex items-center gap-1 text-gray-500">
+                            <MessageCircle className="w-4 h-4" />
+                            <span className="text-sm font-medium">{q.answersCount}</span>
+                         </div>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+            )}
+
+            {/* --- TAB CONTENT: POLLS --- */}
+            {activeTab === 'polls' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 {polls.map((poll) => (
+                   <div key={poll.id} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm">
+                      <div className="flex items-center gap-3 mb-4">
+                         <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600">
+                           <BarChart2 className="w-5 h-5" />
+                         </div>
+                         <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white text-sm">{poll.question}</h3>
+                            <p className="text-xs text-gray-500">Created by {poll.author} • {poll.date}</p>
+                         </div>
+                      </div>
+                      <div className="space-y-3">
+                         {poll.options.map((option, idx) => (
+                           <div key={idx} className="relative pt-1">
+                             <div className="flex justify-between items-center mb-1 text-xs">
+                                <span className={`font-medium ${option.isWinner ? 'text-purple-700 dark:text-purple-400' : 'text-gray-600 dark:text-slate-300'}`}>
+                                  {option.label} {option.isWinner && '🏆'}
+                                </span>
+                                <span className="text-gray-500">{option.percent}% ({option.count})</span>
+                             </div>
+                             <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-100 dark:bg-slate-700">
+                                <div style={{ width: `${option.percent}%` }} className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${option.isWinner ? 'bg-purple-600' : 'bg-gray-400 dark:bg-slate-500'}`}></div>
+                             </div>
+                           </div>
+                         ))}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                         <span className="text-xs text-gray-500">{poll.totalVotes} total votes</span>
+                         <button className="text-xs font-medium text-purple-600 hover:text-purple-700">Vote Now</button>
+                      </div>
+                   </div>
+                 ))}
+                 
+                 <button 
+                    onClick={() => setShowCreatePoll(true)} 
+                    className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors min-h-[250px]"
+                 >
+                    <div className="w-12 h-12 bg-purple-50 dark:bg-slate-700 rounded-full flex items-center justify-center mb-3 text-purple-600">
+                       <Plus className="w-6 h-6" />
+                    </div>
+                    <span className="font-semibold text-gray-700 dark:text-slate-300">Create New Poll</span>
+                 </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* --- MODAL: DISCUSSION DETAIL --- */}
+      {selectedDiscussion && (
+        <div className="absolute inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm">
+          <div className="w-full md:w-[600px] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                 <button onClick={handleCloseModal} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <X className="w-5 h-5 text-gray-500" />
+                 </button>
+                 <span className="font-bold text-gray-800 dark:text-white">Discussion Details</span>
+              </div>
+              <button className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500">
+                 <MoreVertical className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+               <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                     <img src={selectedDiscussion.avatar} className="w-12 h-12 rounded-full" />
+                     <div>
+                        <h2 className="font-bold text-xl text-gray-900 dark:text-white">{selectedDiscussion.title}</h2>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                           <span className="font-medium text-gray-900 dark:text-white">{selectedDiscussion.author}</span>
+                           <span>•</span>
+                           <span>{selectedDiscussion.date}</span>
+                        </div>
+                     </div>
+                  </div>
+                  <div className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase mb-4 ${getBadgeColor(selectedDiscussion.type)}`}>
+                     {selectedDiscussion.type}
+                  </div>
+                  <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-6">
+                     {selectedDiscussion.description}
+                  </p>
+               </div>
+               <div className="space-y-6">
+                  <h3 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Replies ({selectedDiscussion.comments?.length || 0})</h3>
+                  {selectedDiscussion.comments && selectedDiscussion.comments.map((comment) => (
+                     <div key={comment.id} className="flex gap-3">
+                        <img src={comment.avatar} className="w-8 h-8 rounded-full flex-shrink-0" />
+                        <div className="flex-1">
+                           <div className="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg rounded-tl-none">
+                              <div className="flex justify-between items-baseline mb-1">
+                                 <span className="font-bold text-sm text-gray-900 dark:text-white">{comment.author}</span>
+                                 <span className="text-xs text-gray-400">{comment.date}</span>
+                              </div>
+                              <p className="text-sm text-gray-700 dark:text-slate-300">{comment.text}</p>
+                           </div>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </div>
+            <div className="p-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+               <div className="flex gap-2 items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2">
+                  <input type="text" placeholder="Write a reply..." className="flex-1 bg-transparent text-sm focus:outline-none dark:text-white" />
+                  <button className="p-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"><Send className="w-4 h-4" /></button>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL: QUESTION & ANSWER DETAIL --- */}
+      {selectedQuestion && (
+        <div className="absolute inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm">
+          <div className="w-full md:w-[600px] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                 <button onClick={handleCloseModal} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <X className="w-5 h-5 text-gray-500" />
+                 </button>
+                 <span className="font-bold text-gray-800 dark:text-white">Question Details</span>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+               <div className="mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{selectedQuestion.question}</h2>
+                  {selectedQuestion.details && (
+                    <p className="text-gray-600 dark:text-slate-300 text-sm mb-4">{selectedQuestion.details}</p>
+                  )}
+               </div>
+               <h3 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider mb-4 border-b pb-2 dark:border-slate-700">
+                 {selectedQuestion.answersCount} Answers
+               </h3>
+               <div className="space-y-6">
+                  {selectedQuestion.answersList && selectedQuestion.answersList.map((answer) => (
+                      <div key={answer.id} className={`p-4 rounded-xl border ${answer.isAccepted ? 'border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
+                         <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2">
+                               <img src={answer.avatar} className="w-6 h-6 rounded-full" />
+                               <span className="font-bold text-sm text-gray-900 dark:text-white">{answer.author}</span>
+                               <span className="text-xs text-gray-500">• {answer.date}</span>
+                            </div>
+                            {answer.isAccepted && (
+                               <span className="flex items-center gap-1 text-xs font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                                  <CheckCircle className="w-3 h-3" /> Accepted Answer
+                               </span>
+                            )}
+                         </div>
+                         <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed">{answer.text}</p>
+                      </div>
+                  ))}
+               </div>
+            </div>
+            <div className="p-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+               <div className="flex gap-2 items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2">
+                  <input type="text" placeholder="Post your answer..." className="flex-1 bg-transparent text-sm focus:outline-none dark:text-white" />
+                  <button className="p-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"><Send className="w-4 h-4" /></button>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL: CREATE POLL --- */}
+      {showCreatePoll && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+           <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+              <div className="p-5 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+                 <div className="flex items-center gap-2">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600">
+                       <BarChart2 className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Create New Poll</h3>
+                 </div>
+                 <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <X className="w-5 h-5" />
+                 </button>
+              </div>
+              <div className="p-6 space-y-6">
+                 <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Question</label>
+                    <input type="text" placeholder="Ask something..." className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={pollQuestion} onChange={(e) => setPollQuestion(e.target.value)} />
+                 </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Options</label>
+                    <div className="space-y-3">
+                       {pollOptions.map((option, index) => (
+                          <div key={index} className="flex gap-2 items-center">
+                             <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-slate-600 flex items-center justify-center text-xs text-gray-400 font-bold">{String.fromCharCode(65 + index)}</div>
+                             <input type="text" placeholder={`Option ${index + 1}`} className="flex-1 p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={option} onChange={(e) => handleOptionChange(index, e.target.value)} />
+                             {pollOptions.length > 2 && <button onClick={() => handleDeleteOption(index)} className="text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                          </div>
+                       ))}
+                    </div>
+                    <button onClick={handleAddOption} className="mt-3 text-sm font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1"><Plus className="w-4 h-4" /> Add Another Option</button>
+                 </div>
+              </div>
+              <div className="p-5 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                 <button onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
+                 <button className="px-6 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md">Create Poll</button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* --- MODAL: CREATE DISCUSSION --- */}
+      {showCreateDiscussion && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+           <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+              <div className="p-5 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+                 <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600">
+                       <FileText className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Start New Discussion</h3>
+                 </div>
+                 <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <X className="w-5 h-5" />
+                 </button>
+              </div>
+              <div className="p-6 space-y-5">
+                 <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Title</label>
+                    <input type="text" placeholder="What's this discussion about?" className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={newDiscussionTitle} onChange={(e) => setNewDiscussionTitle(e.target.value)} />
+                 </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Type</label>
+                    <div className="relative">
+                       <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                       <select className="w-full pl-10 pr-4 p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white appearance-none cursor-pointer" value={newDiscussionType} onChange={(e) => setNewDiscussionType(e.target.value)}>
+                          <option value="Discussion">General Discussion</option>
+                          <option value="Meeting">Meeting</option>
+                          <option value="BREAKOUT">Breakout Room</option>
+                       </select>
+                    </div>
+                 </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Description</label>
+                    <textarea rows={4} placeholder="Add some details..." className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white resize-none" value={newDiscussionDesc} onChange={(e) => setNewDiscussionDesc(e.target.value)}></textarea>
+                 </div>
+              </div>
+              <div className="p-5 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                 <button onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
+                 <button className="px-6 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md">Post Discussion</button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* --- MODAL: CREATE QUESTION --- */}
+      {showCreateQuestion && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+           <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+              <div className="p-5 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+                 <div className="flex items-center gap-2">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600">
+                       <HelpCircle className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Ask a Question</h3>
+                 </div>
+                 <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <X className="w-5 h-5" />
+                 </button>
+              </div>
+              <div className="p-6 space-y-5">
+                 <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Your Question</label>
+                    <input type="text" placeholder="e.g. How do I reset my password?" className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={newQuestionText} onChange={(e) => setNewQuestionText(e.target.value)} />
+                 </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Additional Details (Optional)</label>
+                    <textarea rows={4} placeholder="Provide context or steps to reproduce..." className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white resize-none" value={newQuestionDetails} onChange={(e) => setNewQuestionDetails(e.target.value)}></textarea>
+                 </div>
+              </div>
+              <div className="p-5 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                 <button onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
+                 <button className="px-6 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md">Post Question</button>
+              </div>
+           </div>
+        </div>
+      )}
+
     </div>
   );
 };
