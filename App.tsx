@@ -11,16 +11,17 @@ import Calendar from './pages/Calendar';
 import Meetings from './pages/Meetings';
 import Tasks from './pages/Tasks';
 import Collaboration from './pages/Collaboration';
-import Workspace from './pages/Workspace'; // Your new Dashboard View
+import Workspace from './pages/Workspace'; 
 import MeetingRoom from './pages/MeetingRoom';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Recording from './pages/Recording'; 
 import MeetingSummaryDetail from './pages/MeetingSummaryDetail';
-import Space from './pages/Space'; // Your new Chat View
+import Space from './pages/Space'; 
 import Video from './pages/Video';
 import MeetingSummary from './pages/Meeting-Summary'; 
 import MeetingHistory from './pages/MeetingHistory';
+import Settings from './pages/Settings'; // ✅ Confirmed Import
 
 // --- LAYOUT WRAPPER ---
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -68,6 +69,7 @@ const getPageTitle = (path: string): string => {
     case '/collaboration': return 'Collaboration';
     case '/notifications': return 'Notifications';
     case '/profile': return 'Profile';
+    case '/settings': return 'Settings'; // ✅ Title Logic
     case '/recording': return 'Recording';
     default: return 'Synthia';
   }
@@ -105,6 +107,7 @@ const App: React.FC = () => {
           <Route path="/collaboration" element={<Collaboration />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} /> {/* ✅ Verified Route */}
           
           {/* Full Screen / Feature Pages */}
           <Route path="/workspace" element={<Workspace />} />

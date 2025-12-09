@@ -11,7 +11,7 @@ import {
   User, 
   FileText 
 } from 'lucide-react';
-import synthiaLogo from "@/assets/synthia-logo.png";
+import synthiaLogo from "@/assets/synthia-logo.png"; 
 
 const Sidebar: React.FC = () => {
   const navItems = [
@@ -24,37 +24,39 @@ const Sidebar: React.FC = () => {
     { name: 'Task', path: '/tasks', icon: CheckSquare },
   ];
 
+  // Helper for consistent styling
+  const getLinkClasses = (isActive: boolean) => 
+    `flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
+      isActive
+        ? 'bg-violet-600 text-white shadow-md shadow-violet-200 dark:shadow-none'
+        : 'text-gray-600 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200'
+    }`;
+
   return (
-    <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
-      {/* Header */}
-      <div className="flex items-center space-x-2 p-4 h-[60px] border-b border-gray-200 dark:border-slate-700">
+    // h-screen ensures the sidebar takes exactly the viewport height
+    <aside className="w-64 h-screen flex-shrink-0 bg-white border-r border-gray-200 flex flex-col dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
+      
+      {/* 1. Header (Fixed Height) */}
+      <div className="flex-none flex items-center space-x-2 p-4 h-[60px] border-b border-gray-200 dark:border-slate-700">
         <img src={synthiaLogo} alt="Synthia" className="h-12 w-12" />
         <span className="text-xl font-semibold text-gray-800 dark:text-white">Synthia</span>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-grow p-4 overflow-y-auto">
+      {/* 2. Scrollable Content (Takes remaining space) */}
+      {/* 'flex-1' makes it grow, 'min-h-0' is critical to allow scrolling within a flex child */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 min-h-0">
         
         {/* Main Menu */}
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-2 dark:text-slate-400">Menu</h3>
-        <nav className="flex-grow flex flex-col space-y-1">
+        <nav className="flex flex-col space-y-1">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
-              className={({ isActive }) =>
-                `flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
-                  isActive
-                    ? 'bg-violet-600 text-white shadow-md shadow-violet-200 dark:shadow-none'
-                    : 'text-gray-600 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200'
-                }`
-              }
+              className={({ isActive }) => getLinkClasses(isActive)}
             >
-              {/* Icon Container with Notification Dot Logic */}
               <div className="relative">
                 <item.icon className="w-5 h-5" />
-                
-                {/* 🔴 THE RED DOT ADDITION */}
                 {item.name === 'Notification' && (
                   <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -62,7 +64,6 @@ const Sidebar: React.FC = () => {
                   </span>
                 )}
               </div>
-
               <span>{item.name}</span>
             </NavLink>
           ))}
@@ -70,16 +71,10 @@ const Sidebar: React.FC = () => {
 
         {/* Others Menu */}
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-2 mt-6 dark:text-slate-400">Others</h3>
-        <nav className="flex flex-col space-y-1">
+        <nav className="flex flex-col space-y-1 pb-4">
           <NavLink
             to="/profile"
-            className={({ isActive }) =>
-              `flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
-                isActive
-                  ? 'bg-violet-600 text-white shadow-md shadow-violet-200 dark:shadow-none'
-                  : 'text-gray-600 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200'
-              }`
-            }
+            className={({ isActive }) => getLinkClasses(isActive)}
           >
             <User className="w-5 h-5" />
             <span>Profile</span>
@@ -87,13 +82,7 @@ const Sidebar: React.FC = () => {
           
           <NavLink
             to="/settings"
-            className={({ isActive }) =>
-              `flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer ${
-                isActive
-                  ? 'bg-violet-600 text-white shadow-md shadow-violet-200 dark:shadow-none'
-                  : 'text-gray-600 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200'
-              }`
-            }
+            className={({ isActive }) => getLinkClasses(isActive)}
           >
             <Settings className="w-5 h-5" />
             <span>Settings</span>
@@ -101,21 +90,23 @@ const Sidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Footer / User Profile */}
-      <div className="border-t border-gray-200 p-4 dark:border-slate-700">
+      {/* 3. Footer / User Profile (Fixed at Bottom) */}
+      <div className="flex-none border-t border-gray-200 p-4 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
         <NavLink 
           to="/profile" 
-          className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg transition-colors dark:hover:bg-slate-700 cursor-pointer"
+          className="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer group"
         >
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 w-full">
             <img 
               src="https://i.pinimg.com/1200x/35/69/30/3569309bfbce2565ff6c83dff214b4c7.jpg" 
               alt="Profile" 
-              className="h-10 w-10 rounded-full border border-gray-200 dark:border-slate-600" 
+              className="h-10 w-10 rounded-full border border-gray-200 dark:border-slate-600 object-cover flex-shrink-0" 
             />
-            <div>
-              <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">Peter Parker</p>
-              <p className="text-xs text-gray-500 dark:text-slate-400">peter.park@ati.da.gov.ph</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-gray-800 dark:text-slate-200 truncate">Peter Parker</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 truncate group-hover:text-violet-600 transition-colors">
+                peter.park@ati.da.gov.ph
+              </p>
             </div>
           </div>
         </NavLink>
