@@ -3,13 +3,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, FileText, CheckSquare, Mic, 
   MessageSquare, Users, LayoutGrid, Upload, 
-  Download, Play, MoreVertical, File, Clock, Search
+  Download, Play, MoreVertical, File, Clock, Search,
+  Briefcase, ChevronDown, Sparkles
 } from 'lucide-react';
 
 const MeetingSummaryDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('summary');
+
+  // New State for Role Switching
+  const [selectedRole, setSelectedRole] = useState('Lead Developer');
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
 
   // Mock data for the view
   const meetingData = {
@@ -21,8 +26,10 @@ const MeetingSummaryDetail: React.FC = () => {
     attendees: 12,
   };
 
+  // UPDATED TABS LIST: Added 'for-you' right after summary
   const tabs = [
     { id: 'summary', label: 'Summary & Reports', icon: FileText },
+    { id: 'for-you', label: 'For You', icon: Sparkles }, // <--- New Tab here
     { id: 'actions', label: 'Action Items', icon: CheckSquare },
     { id: 'transcript', label: 'Recording & Transcript', icon: Mic },
     { id: 'files', label: 'Shared Files', icon: File },
@@ -30,6 +37,34 @@ const MeetingSummaryDetail: React.FC = () => {
     { id: 'chat', label: 'Chat History', icon: MessageSquare },
     { id: 'breakout', label: 'Breakout Rooms', icon: LayoutGrid },
   ];
+
+  // Mock Data for Role Summaries
+  const roleSummaries: Record<string, { summary: string; points: string[] }> = {
+    'Lead Developer': {
+      summary: "The panel focused heavily on your tech stack choices. The WebRTC integration was approved, but the database schema needs immediate refactoring.",
+      points: [
+        "Action: Refactor Database Schema by Friday.",
+        "Security: Review authentication flow for vulnerabilities.",
+        "Tech Stack: WebRTC is confirmed for real-time comms."
+      ]
+    },
+    'UI/UX Designer': {
+      summary: "Feedback was positive on the layout, but the panel requested a phased rollout design for mobile. Accessibility needs to be highlighted in the next iteration.",
+      points: [
+        "Action: Create mockups for phased mobile rollout.",
+        "Update: Ensure color contrast meets WCAG standards.",
+        "Task: Refine the user onboarding flow."
+      ]
+    },
+    'Project Manager': {
+      summary: "The project scope was deemed slightly ambitious. You need to adjust the timeline to account for the new database requirements and security audits.",
+      points: [
+        "Action: Update Gantt chart with new DB timeline.",
+        "Risk: Auth flow security is now a high-priority risk.",
+        "Resource: Allocate more time for QA testing."
+      ]
+    }
+  };
 
   return (
     <div className="p-6 md:p-8 bg-gray-50 dark:bg-slate-900 min-h-full">
@@ -85,10 +120,11 @@ const MeetingSummaryDetail: React.FC = () => {
       {/* Tab Contents */}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 min-h-[400px]">
         
-        {/* === SUMMARY & REPORTS TAB === */}
+        {/* === TAB 1: SUMMARY & REPORTS === */}
         {activeTab === 'summary' && (
           <div className="space-y-8">
-            {/* AI Summary */}
+            
+            {/* General AI Summary */}
             <section>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-6 bg-violet-500 rounded-full"></span> Meeting Highlights
@@ -145,7 +181,76 @@ const MeetingSummaryDetail: React.FC = () => {
           </div>
         )}
 
-        {/* === ACTION ITEMS TAB === */}
+        {/* === TAB 2: FOR YOU (NEW) === */}
+        {activeTab === 'for-you' && (
+          <div className="space-y-6">
+             {/* Role Based Summary Section (Prominent Card) */}
+             <section className="bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800 rounded-xl p-6 relative overflow-visible">
+              <div className="flex flex-col sm:flex-row justify-between items-start mb-6 gap-4">
+                 <div className="flex items-start gap-4">
+                    <div className="p-3 bg-white dark:bg-violet-800 rounded-xl text-violet-600 dark:text-violet-300 shadow-sm">
+                       <Sparkles className="w-6 h-6" />
+                    </div>
+                    <div>
+                       <h4 className="font-bold text-gray-900 dark:text-white text-lg">Your Personal Brief</h4>
+                       <p className="text-sm text-gray-600 dark:text-slate-300 mt-1">
+                         Specific insights and tasks for the <strong>{selectedRole}</strong> role.
+                       </p>
+                    </div>
+                 </div>
+
+                 {/* Role Switcher Dropdown */}
+                 <div className="relative">
+                    <button 
+                      onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                      className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+                    >
+                      <Briefcase className="w-4 h-4 text-violet-500" />
+                      {selectedRole}
+                      <ChevronDown className="w-4 h-4 ml-1 text-gray-400" />
+                    </button>
+                    {isRoleDropdownOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 z-10 py-1 overflow-hidden">
+                        <div className="px-4 py-2 bg-gray-50 dark:bg-slate-900/50 text-xs font-bold text-gray-500 uppercase tracking-wider">Switch Perspective</div>
+                        {Object.keys(roleSummaries).map((role) => (
+                          <button
+                            key={role}
+                            onClick={() => { setSelectedRole(role); setIsRoleDropdownOpen(false); }}
+                            className={`block w-full text-left px-4 py-3 text-sm hover:bg-violet-50 dark:hover:bg-slate-700 transition-colors ${selectedRole === role ? 'text-violet-700 font-medium bg-violet-50/50' : 'text-gray-700 dark:text-slate-300'}`}
+                          >
+                            {role}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                 </div>
+              </div>
+
+              {/* Dynamic Content */}
+              <div className="bg-white dark:bg-slate-800/80 rounded-xl p-6 border border-violet-100 dark:border-slate-700/50 shadow-sm">
+                 <h5 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                   Summary
+                 </h5>
+                 <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-6">
+                   {roleSummaries[selectedRole].summary}
+                 </p>
+                 
+                 <h5 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                   Key Takeaways
+                 </h5>
+                 <div className="flex flex-wrap gap-3">
+                    {roleSummaries[selectedRole].points.map((point, idx) => (
+                       <span key={idx} className="flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-200 border border-violet-100 dark:border-violet-700/50">
+                         {point}
+                       </span>
+                    ))}
+                 </div>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* === TAB 3: ACTION ITEMS === */}
         {activeTab === 'actions' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
@@ -171,7 +276,7 @@ const MeetingSummaryDetail: React.FC = () => {
           </div>
         )}
 
-        {/* === RECORDING & TRANSCRIPT TAB === */}
+        {/* === TAB 4: RECORDING & TRANSCRIPT === */}
         {activeTab === 'transcript' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
             {/* Player */}
@@ -227,7 +332,7 @@ const MeetingSummaryDetail: React.FC = () => {
           </div>
         )}
 
-        {/* === SHARED FILES TAB === */}
+        {/* === TAB 5: SHARED FILES === */}
         {activeTab === 'files' && (
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Files Shared in Meeting</h3>
@@ -254,7 +359,7 @@ const MeetingSummaryDetail: React.FC = () => {
           </div>
         )}
 
-        {/* === ATTENDANCE TAB === */}
+        {/* === TAB 6: ATTENDANCE === */}
         {activeTab === 'attendance' && (
           <div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -301,7 +406,7 @@ const MeetingSummaryDetail: React.FC = () => {
           </div>
         )}
 
-        {/* === CHAT HISTORY TAB === */}
+        {/* === TAB 7: CHAT HISTORY === */}
         {activeTab === 'chat' && (
           <div className="space-y-6 max-w-3xl">
             <div className="flex gap-4">
@@ -331,7 +436,7 @@ const MeetingSummaryDetail: React.FC = () => {
           </div>
         )}
 
-        {/* === BREAKOUT ROOMS TAB === */}
+        {/* === TAB 8: BREAKOUT ROOMS === */}
         {activeTab === 'breakout' && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Breakout Sessions (10:45 AM - 11:15 AM)</h3>

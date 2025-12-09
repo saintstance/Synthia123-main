@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ChevronDown, MessageCircle, Search, MoreVertical, ChevronLeft, 
   Filter, ThumbsUp, CheckCircle, BarChart2, Plus, Users, X, Send,
-  Trash2, HelpCircle, FileText, Tag
+  Trash2, HelpCircle
 } from 'lucide-react';
 
 // --- Types ---
@@ -71,26 +71,18 @@ const Space: React.FC = () => {
   // Data State
   const [selectedDiscussion, setSelectedDiscussion] = useState<Discussion | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [showCreatePoll, setShowCreatePoll] = useState(false); // NEW: State for Poll Modal
   
-  // Modal States
-  const [showCreatePoll, setShowCreatePoll] = useState(false);
-  const [showCreateDiscussion, setShowCreateDiscussion] = useState(false); // NEW
-  const [showCreateQuestion, setShowCreateQuestion] = useState(false);     // NEW
-  
-  // Form States
+  // Create Poll State
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState(['', '']);
-  const [newDiscussionTitle, setNewDiscussionTitle] = useState('');
-  const [newDiscussionDesc, setNewDiscussionDesc] = useState('');
-  const [newDiscussionType, setNewDiscussionType] = useState('Discussion');
-  const [newQuestionText, setNewQuestionText] = useState('');
-  const [newQuestionDetails, setNewQuestionDetails] = useState('');
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
 
   // --- MOCK DATA ---
+  // (Same mock data as before...)
   const discussions: Discussion[] = [
     {
       id: 1,
@@ -237,8 +229,6 @@ const Space: React.FC = () => {
     setSelectedDiscussion(null);
     setSelectedQuestion(null);
     setShowCreatePoll(false);
-    setShowCreateDiscussion(false);
-    setShowCreateQuestion(false);
   };
 
   // Poll Creator Handlers
@@ -375,10 +365,7 @@ const Space: React.FC = () => {
                     <option value="Discussion">General</option>
                   </select>
                 </div>
-                <button 
-                  onClick={() => setShowCreateDiscussion(true)} // Opens Create Modal
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors"
-                >
+                <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors">
                   <Plus className="w-4 h-4" />
                   New Discussion
                 </button>
@@ -439,12 +426,7 @@ const Space: React.FC = () => {
               <div className="space-y-4 max-w-4xl mx-auto">
                  <div className="flex justify-between items-center mb-4">
                    <h2 className="font-bold text-gray-700 dark:text-white">Recent Questions</h2>
-                   <button 
-                      onClick={() => setShowCreateQuestion(true)} // Opens Question Modal
-                      className="text-sm text-purple-600 font-medium hover:underline"
-                   >
-                      Ask a Question
-                   </button>
+                   <button className="text-sm text-purple-600 font-medium hover:underline">Ask a Question</button>
                  </div>
                  {questions.map((q) => (
                    <div 
@@ -517,6 +499,7 @@ const Space: React.FC = () => {
                    </div>
                  ))}
                  
+                 {/* Create Poll Button (Opens Modal) */}
                  <button 
                     onClick={() => setShowCreatePoll(true)} 
                     className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors min-h-[250px]"
@@ -532,7 +515,7 @@ const Space: React.FC = () => {
         </div>
       </div>
 
-      {/* --- MODAL: DISCUSSION DETAIL --- */}
+      {/* --- MODAL 1: DISCUSSION DETAIL --- */}
       {selectedDiscussion && (
         <div className="absolute inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm">
           <div className="w-full md:w-[600px] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
@@ -566,6 +549,14 @@ const Space: React.FC = () => {
                   <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-6">
                      {selectedDiscussion.description}
                   </p>
+                  <div className="flex gap-4 border-b border-gray-200 dark:border-slate-700 pb-4">
+                     <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-purple-600 transition-colors">
+                        <ThumbsUp className="w-4 h-4" /> Like
+                     </button>
+                     <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-purple-600 transition-colors">
+                        <MessageCircle className="w-4 h-4" /> Comment
+                     </button>
+                  </div>
                </div>
                <div className="space-y-6">
                   <h3 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Replies ({selectedDiscussion.comments?.length || 0})</h3>
@@ -595,7 +586,7 @@ const Space: React.FC = () => {
         </div>
       )}
 
-      {/* --- MODAL: QUESTION & ANSWER DETAIL --- */}
+      {/* --- MODAL 2: QUESTION & ANSWER --- */}
       {selectedQuestion && (
         <div className="absolute inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm">
           <div className="w-full md:w-[600px] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
@@ -613,12 +604,24 @@ const Space: React.FC = () => {
                   {selectedQuestion.details && (
                     <p className="text-gray-600 dark:text-slate-300 text-sm mb-4">{selectedQuestion.details}</p>
                   )}
+                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                     <img src={selectedQuestion.avatar} className="w-6 h-6 rounded-full" />
+                     <span>Asked by <span className="font-medium text-gray-900 dark:text-white">{selectedQuestion.author}</span></span>
+                     <span>•</span>
+                     <span>{selectedQuestion.date}</span>
+                  </div>
+                  <div className="flex gap-4 mt-4">
+                     <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 text-sm font-medium">
+                        <ThumbsUp className="w-4 h-4 text-purple-600" /> {selectedQuestion.votes} Upvotes
+                     </button>
+                  </div>
                </div>
                <h3 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider mb-4 border-b pb-2 dark:border-slate-700">
                  {selectedQuestion.answersCount} Answers
                </h3>
                <div className="space-y-6">
-                  {selectedQuestion.answersList && selectedQuestion.answersList.map((answer) => (
+                  {selectedQuestion.answersList && selectedQuestion.answersList.length > 0 ? (
+                    selectedQuestion.answersList.map((answer) => (
                       <div key={answer.id} className={`p-4 rounded-xl border ${answer.isAccepted ? 'border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
                          <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-2">
@@ -633,8 +636,15 @@ const Space: React.FC = () => {
                             )}
                          </div>
                          <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed">{answer.text}</p>
+                         <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                            <button className="flex items-center gap-1 hover:text-purple-600"><ThumbsUp className="w-3 h-3" /> {answer.votes} Helpful</button>
+                            <button className="hover:text-purple-600">Reply</button>
+                         </div>
                       </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-400 text-sm">No answers yet. Be the first to help!</div>
+                  )}
                </div>
             </div>
             <div className="p-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
@@ -647,10 +657,12 @@ const Space: React.FC = () => {
         </div>
       )}
 
-      {/* --- MODAL: CREATE POLL --- */}
+      {/* --- MODAL 3: CREATE POLL (NEW) --- */}
       {showCreatePoll && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
            <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+              
+              {/* Modal Header */}
               <div className="p-5 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
                  <div className="flex items-center gap-2">
                     <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600">
@@ -662,106 +674,76 @@ const Space: React.FC = () => {
                     <X className="w-5 h-5" />
                  </button>
               </div>
+
+              {/* Modal Body */}
               <div className="p-6 space-y-6">
+                 {/* Question Input */}
                  <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Question</label>
-                    <input type="text" placeholder="Ask something..." className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={pollQuestion} onChange={(e) => setPollQuestion(e.target.value)} />
+                    <input 
+                       type="text" 
+                       placeholder="Ask something..." 
+                       className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white"
+                       value={pollQuestion}
+                       onChange={(e) => setPollQuestion(e.target.value)}
+                    />
                  </div>
+
+                 {/* Options Inputs */}
                  <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Options</label>
                     <div className="space-y-3">
                        {pollOptions.map((option, index) => (
                           <div key={index} className="flex gap-2 items-center">
-                             <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-slate-600 flex items-center justify-center text-xs text-gray-400 font-bold">{String.fromCharCode(65 + index)}</div>
-                             <input type="text" placeholder={`Option ${index + 1}`} className="flex-1 p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={option} onChange={(e) => handleOptionChange(index, e.target.value)} />
-                             {pollOptions.length > 2 && <button onClick={() => handleDeleteOption(index)} className="text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                             <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-slate-600 flex items-center justify-center text-xs text-gray-400 font-bold">
+                                {String.fromCharCode(65 + index)}
+                             </div>
+                             <input 
+                                type="text" 
+                                placeholder={`Option ${index + 1}`}
+                                className="flex-1 p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white"
+                                value={option}
+                                onChange={(e) => handleOptionChange(index, e.target.value)}
+                             />
+                             {pollOptions.length > 2 && (
+                                <button 
+                                   onClick={() => handleDeleteOption(index)}
+                                   className="text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                   <Trash2 className="w-4 h-4" />
+                                </button>
+                             )}
                           </div>
                        ))}
                     </div>
-                    <button onClick={handleAddOption} className="mt-3 text-sm font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1"><Plus className="w-4 h-4" /> Add Another Option</button>
+                    <button 
+                       onClick={handleAddOption}
+                       className="mt-3 text-sm font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                    >
+                       <Plus className="w-4 h-4" /> Add Another Option
+                    </button>
+                 </div>
+                 
+                 {/* Settings Hint */}
+                 <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-700 dark:text-blue-300 text-xs">
+                    <HelpCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <p>Polls are public by default. Everyone in this space will be able to see the results after voting.</p>
                  </div>
               </div>
-              <div className="p-5 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-end gap-3">
-                 <button onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
-                 <button className="px-6 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md">Create Poll</button>
-              </div>
-           </div>
-        </div>
-      )}
 
-      {/* --- MODAL: CREATE DISCUSSION --- */}
-      {showCreateDiscussion && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-           <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-              <div className="p-5 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
-                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600">
-                       <FileText className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Start New Discussion</h3>
-                 </div>
-                 <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                    <X className="w-5 h-5" />
+              {/* Modal Footer */}
+              <div className="p-5 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-end gap-3">
+                 <button 
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                 >
+                    Cancel
+                 </button>
+                 <button className="px-6 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md transition-all transform hover:scale-105">
+                    Create Poll
                  </button>
               </div>
-              <div className="p-6 space-y-5">
-                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Title</label>
-                    <input type="text" placeholder="What's this discussion about?" className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={newDiscussionTitle} onChange={(e) => setNewDiscussionTitle(e.target.value)} />
-                 </div>
-                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Type</label>
-                    <div className="relative">
-                       <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                       <select className="w-full pl-10 pr-4 p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white appearance-none cursor-pointer" value={newDiscussionType} onChange={(e) => setNewDiscussionType(e.target.value)}>
-                          <option value="Discussion">General Discussion</option>
-                          <option value="Meeting">Meeting</option>
-                          <option value="BREAKOUT">Breakout Room</option>
-                       </select>
-                    </div>
-                 </div>
-                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Description</label>
-                    <textarea rows={4} placeholder="Add some details..." className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white resize-none" value={newDiscussionDesc} onChange={(e) => setNewDiscussionDesc(e.target.value)}></textarea>
-                 </div>
-              </div>
-              <div className="p-5 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-end gap-3">
-                 <button onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
-                 <button className="px-6 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md">Post Discussion</button>
-              </div>
-           </div>
-        </div>
-      )}
 
-      {/* --- MODAL: CREATE QUESTION --- */}
-      {showCreateQuestion && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-           <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-              <div className="p-5 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
-                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600">
-                       <HelpCircle className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Ask a Question</h3>
-                 </div>
-                 <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                    <X className="w-5 h-5" />
-                 </button>
-              </div>
-              <div className="p-6 space-y-5">
-                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Your Question</label>
-                    <input type="text" placeholder="e.g. How do I reset my password?" className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white" value={newQuestionText} onChange={(e) => setNewQuestionText(e.target.value)} />
-                 </div>
-                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Additional Details (Optional)</label>
-                    <textarea rows={4} placeholder="Provide context or steps to reproduce..." className="w-full p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white resize-none" value={newQuestionDetails} onChange={(e) => setNewQuestionDetails(e.target.value)}></textarea>
-                 </div>
-              </div>
-              <div className="p-5 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-end gap-3">
-                 <button onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
-                 <button className="px-6 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md">Post Question</button>
-              </div>
            </div>
         </div>
       )}

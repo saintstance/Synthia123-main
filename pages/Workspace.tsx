@@ -1,18 +1,104 @@
 import React, { useState } from 'react';
 import { 
   Hash, Search, Plus, MessageSquare, ChevronDown, Smile, 
-  Paperclip, Video, Phone, Settings, Bell
+  Paperclip, Video, Phone, Settings, Bell, ChevronLeft, X 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Workspace: React.FC = () => {
   const navigate = useNavigate();
+  
+  // State for Channel Management
+  const [channels, setChannels] = useState(['general', 'announcements', 'projects', 'random']);
   const [activeChannel, setActiveChannel] = useState('general');
   const [message, setMessage] = useState('');
 
+  // State for Modal
+  const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
+  const [newChannelName, setNewChannelName] = useState('');
+
+  const handleAddChannel = () => {
+    if (newChannelName.trim()) {
+      // Convert to kebab-case for channel format (e.g. "My Channel" -> "my-channel")
+      const formattedName = newChannelName.toLowerCase().replace(/\s+/g, '-');
+      setChannels([...channels, formattedName]);
+      setNewChannelName('');
+      setIsChannelModalOpen(false);
+      setActiveChannel(formattedName); // Switch to new channel
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-white dark:bg-slate-900 overflow-hidden font-sans">
+    <div className="flex h-screen bg-white dark:bg-slate-900 overflow-hidden font-sans relative">
       
+      {/* ================= MODAL OVERLAY ================= */}
+      {isChannelModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-700 transform transition-all scale-100">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-700">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Create a channel</h3>
+              <button 
+                onClick={() => setIsChannelModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                  Channel Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Hash className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={newChannelName}
+                    onChange={(e) => setNewChannelName(e.target.value)}
+                    placeholder="e.g. marketing-updates"
+                    className="pl-9 block w-full rounded-lg border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-900/50 text-gray-900 dark:text-white shadow-sm focus:border-violet-500 focus:ring-violet-500 sm:text-sm p-2.5"
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddChannel()}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
+                  Channels are where your team communicates. They're best when organized around a topic — #marketing, for example.
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 pt-2">
+              <button
+                onClick={() => setIsChannelModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddChannel}
+                disabled={!newChannelName.trim()}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm transition-all ${
+                  newChannelName.trim() 
+                    ? 'bg-violet-600 hover:bg-violet-700' 
+                    : 'bg-gray-300 dark:bg-slate-600 cursor-not-allowed'
+                }`}
+              >
+                Create Channel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+      {/* ================= END MODAL ================= */}
+
+
       {/* Workspace Sidebar */}
       <aside className="w-72 bg-gray-50 dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex flex-col">
         
@@ -33,9 +119,17 @@ const Workspace: React.FC = () => {
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
            
+           {/* Back to Workspace Link */}
+           <div 
+              onClick={() => navigate('/workspace')} 
+              className="flex items-center gap-2 px-2 text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white cursor-pointer transition-colors"
+           >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Back to Workspace</span>
+           </div>
+
            {/* Primary Nav */}
            <div className="space-y-1">
-              {/* GO BACK TO COLLABORATION (TEAMS LIST) */}
               <div 
                 onClick={() => navigate('/collaboration')}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 cursor-pointer transition-colors"
@@ -44,7 +138,6 @@ const Workspace: React.FC = () => {
                   <span className="text-sm font-medium">Browse Teams</span>
               </div>
               
-              {/* GO TO SPACE (DISCUSSION) - CONNECTED HERE */}
               <div 
                 onClick={() => navigate('/space')} 
                 className="flex items-center gap-3 px-3 py-2 rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-medium cursor-pointer"
@@ -54,21 +147,27 @@ const Workspace: React.FC = () => {
               </div>
            </div>
 
-           {/* Channels */}
+           {/* Channels Section */}
            <div>
               <div className="flex items-center justify-between px-2 mb-2 group">
                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 dark:group-hover:text-slate-300 transition-colors">Channels</span>
-                 <Plus className="w-3 h-3 text-gray-400 cursor-pointer hover:text-violet-600" />
+                 {/* Open Modal Button */}
+                 <button 
+                    onClick={() => setIsChannelModalOpen(true)}
+                    className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                 >
+                    <Plus className="w-3 h-3 text-gray-400 cursor-pointer hover:text-violet-600" />
+                 </button>
               </div>
               <div className="space-y-0.5">
-                  {['general', 'announcements', 'projects', 'random'].map(channel => (
+                  {channels.map(channel => (
                     <div 
                         key={channel}
                         onClick={() => setActiveChannel(channel)}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors ${activeChannel === channel ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700/50'}`}
                     >
                         <Hash className={`w-3.5 h-3.5 ${activeChannel === channel ? 'text-gray-800 dark:text-white' : 'text-gray-400'}`} />
-                        <span className="text-sm">{channel}</span>
+                        <span className="text-sm truncate">{channel}</span>
                     </div>
                   ))}
               </div>
