@@ -1,17 +1,18 @@
-
 import React, { useState } from 'react';
 import { 
   MoreHorizontal, Calendar, Clock, Video, 
   AlertTriangle, Phone, CheckSquare, MessageSquare, 
-  User, Bell, Search, Filter, X
+  User, Bell, Search, Filter, X,
+  UserPlus, Building, Shield 
 } from 'lucide-react';
 
-type FilterType = 'all' | 'unread' | 'mentions' | 'tasks';
+// 1. ADDED 'invites' TO FILTER TYPES
+type FilterType = 'all' | 'unread' | 'mentions' | 'tasks' | 'invites';
 
 interface NotificationItem {
   id: string;
-  category: FilterType | 'tasks';
-  type: 'meeting' | 'mention' | 'task' | 'deadline' | 'missed';
+  category: FilterType; // simplified category type
+  type: 'meeting' | 'mention' | 'task' | 'deadline' | 'missed' | 'invite';
   unread: boolean;
   initials: React.ReactNode;
   initialsBg: string;
@@ -27,6 +28,17 @@ const Notifications: React.FC = () => {
 
   // Initial Data State
   const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: '6',
+      category: 'invites', // 2. UPDATED CATEGORY
+      type: 'invite',
+      unread: true,
+      initials: <UserPlus className="w-4 h-4" />,
+      initialsBg: 'bg-orange-500',
+      name: 'Sarah Conner',
+      preview: 'Invited you to join "Marketing Team"',
+      time: '2m'
+    },
     {
       id: '1',
       category: 'tasks',
@@ -86,7 +98,6 @@ const Notifications: React.FC = () => {
 
   const handleNotificationClick = (id: string) => {
     setSelectedId(id);
-    // Mark as read when clicked
     setNotifications(prev => 
       prev.map(item => item.id === id ? { ...item, unread: false } : item)
     );
@@ -97,18 +108,16 @@ const Notifications: React.FC = () => {
     setShowMenu(false);
   };
 
-  // Filter Logic
+  // 3. UPDATED FILTER LOGIC
   const filteredNotifications = notifications.filter(item => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'unread') return item.unread;
-    if (activeFilter === 'mentions') return item.category === 'mentions';
-    if (activeFilter === 'tasks') return item.category === 'tasks';
-    return true;
+    // Matches category directly (mentions, tasks, invites)
+    return item.category === activeFilter;
   });
 
   const selectedItem = notifications.find(n => n.id === selectedId);
 
-  // Render content based on selection type
   const renderDetailContent = () => {
     if (!selectedItem) {
       return (
@@ -123,6 +132,66 @@ const Notifications: React.FC = () => {
     }
 
     switch (selectedItem.type) {
+      case 'invite':
+        return (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8 max-w-4xl mx-auto animate-in fade-in duration-300">
+            <div className="flex justify-between items-start mb-8 pb-6 border-b border-gray-100 dark:border-slate-700">
+              <div className="flex gap-5">
+                <div className="w-12 h-12 bg-orange-50 dark:bg-slate-700 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <UserPlus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Workspace Invitation</h2>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    Invitation from <span className="font-semibold text-gray-900 dark:text-slate-200">Sarah Conner</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-orange-50 dark:bg-slate-700/50 p-6 rounded-xl border border-orange-100 dark:border-slate-600 mb-8">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                  <Building className="w-6 h-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Marketing Team</h3>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">synthiagroup.com</p>
+                </div>
+              </div>
+              <p className="text-gray-700 dark:text-slate-300 text-sm mb-4">
+                Sarah invited you to join the Marketing Team workspace. You will have access to all shared projects, calendars, and team chats.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-orange-100 dark:border-slate-600 flex items-center gap-3">
+                   <Shield className="w-4 h-4 text-orange-500" />
+                   <div>
+                     <p className="text-xs text-gray-500 dark:text-slate-400">Role</p>
+                     <p className="font-semibold text-gray-900 dark:text-white">Editor</p>
+                   </div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-orange-100 dark:border-slate-600 flex items-center gap-3">
+                   <User className="w-4 h-4 text-orange-500" />
+                   <div>
+                     <p className="text-xs text-gray-500 dark:text-slate-400">Members</p>
+                     <p className="font-semibold text-gray-900 dark:text-white">12 Active</p>
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button className="flex-1 py-3 bg-orange-600 text-white rounded-lg font-bold text-sm hover:bg-orange-700 shadow-md shadow-orange-200 dark:shadow-none transition-colors">
+                Join Workspace
+              </button>
+              <button className="flex-1 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
+                Decline
+              </button>
+            </div>
+          </div>
+        );
+
       case 'meeting':
         return (
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8 max-w-4xl mx-auto animate-in fade-in duration-300">
@@ -319,8 +388,10 @@ const Notifications: React.FC = () => {
               )}
             </div>
           </div>
+          
+          {/* 4. UPDATED FILTER BUTTONS */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            {['all', 'unread', 'mentions', 'tasks'].map(filter => (
+            {['all', 'unread', 'invites', 'mentions', 'tasks'].map(filter => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter as FilterType)}
