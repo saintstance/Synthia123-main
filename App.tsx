@@ -6,6 +6,8 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 
 // --- PAGES ---
+import Landing from './pages/Landing';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
 import Meetings from './pages/Meetings';
@@ -21,13 +23,15 @@ import Space from './pages/Space';
 import Video from './pages/Video';
 import MeetingSummary from './pages/Meeting-Summary'; 
 import MeetingHistory from './pages/MeetingHistory';
-import Settings from './pages/Settings'; // ✅ Confirmed Import
+import Settings from './pages/Settings'; 
 
 // --- LAYOUT WRAPPER ---
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   
   // Define paths that require a Full Screen layout (No Sidebar/Header)
+  const isLanding = location.pathname === '/';
+  const isLogin = location.pathname === '/login';
   const isMeetingRoom = location.pathname === '/meeting-room';
   const isVideo = location.pathname === '/video';
   const isRecording = location.pathname === '/recording'; 
@@ -36,8 +40,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isWorkspace = location.pathname.startsWith('/workspace');
   const isSpace = location.pathname.startsWith('/space');
 
-  // If on a full-screen page, render children directly without the main layout
-  if (isMeetingRoom || isVideo || isRecording || isWorkspace || isSpace) {
+  // If on a full-screen page (Landing, Login, etc.), render children directly 
+  // WITHOUT the main Dashboard Layout (Sidebar/Header)
+  if (isLanding || isLogin || isMeetingRoom || isVideo || isRecording || isWorkspace || isSpace) {
     return <>{children}</>;
   }
 
@@ -60,7 +65,7 @@ const getPageTitle = (path: string): string => {
   if (path.startsWith('/meeting-summary/')) return 'Meeting Details';
   
   switch (path) {
-    case '/': return 'Dashboard';
+    case '/dashboard': return 'Dashboard'; // Updated path
     case '/calendar': return 'Calendar';
     case '/meetings': return 'Meetings';
     case '/meeting-summary': return 'Meeting Summary';
@@ -69,7 +74,7 @@ const getPageTitle = (path: string): string => {
     case '/collaboration': return 'Collaboration';
     case '/notifications': return 'Notifications';
     case '/profile': return 'Profile';
-    case '/settings': return 'Settings'; // ✅ Title Logic
+    case '/settings': return 'Settings'; 
     case '/recording': return 'Recording';
     default: return 'Synthia';
   }
@@ -92,8 +97,13 @@ const App: React.FC = () => {
     <HashRouter>
       <Layout>
         <Routes>
-          {/* Main Dashboard Pages */}
-          <Route path="/" element={<Dashboard />} />
+          {/* Public Pages (Full Screen) */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* Main App Pages (With Sidebar) */}
+          {/* Renamed root dashboard to /dashboard so it doesn't conflict with Landing */}
+          <Route path="/dashboard" element={<Dashboard />} /> 
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/meetings" element={<Meetings />} />
           
@@ -107,7 +117,7 @@ const App: React.FC = () => {
           <Route path="/collaboration" element={<Collaboration />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} /> {/* ✅ Verified Route */}
+          <Route path="/settings" element={<Settings />} />
           
           {/* Full Screen / Feature Pages */}
           <Route path="/workspace" element={<Workspace />} />
@@ -116,7 +126,7 @@ const App: React.FC = () => {
           <Route path="/meeting-room" element={<MeetingRoom />} />
           <Route path="/recording" element={<Recording />} />
           
-          {/* 404 Fallback */}
+          {/* 404 Fallback - Redirects to Landing Page */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

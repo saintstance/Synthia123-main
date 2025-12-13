@@ -15,7 +15,8 @@ import synthiaLogo from "@/assets/synthia-logo.png";
 
 const Sidebar: React.FC = () => {
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    // 🔴 CHANGE THIS LINE: from '/' to '/dashboard'
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }, 
     { name: 'Notification', path: '/notifications', icon: Bell },
     { name: 'Calendar', path: '/calendar', icon: Calendar },
     { name: 'Meeting', path: '/meetings', icon: Video },
@@ -33,20 +34,16 @@ const Sidebar: React.FC = () => {
     }`;
 
   return (
-    // h-screen ensures the sidebar takes exactly the viewport height
-    <aside className="w-64 h-screen flex-shrink-0 bg-white border-r border-gray-200 flex flex-col dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
+    <aside className="w-64 h-full flex-shrink-0 bg-white border-r border-gray-200 flex flex-col dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
       
-      {/* 1. Header (Fixed Height) */}
+      {/* Header */}
       <div className="flex-none flex items-center space-x-2 p-4 h-[60px] border-b border-gray-200 dark:border-slate-700">
         <img src={synthiaLogo} alt="Synthia" className="h-12 w-12" />
         <span className="text-xl font-semibold text-gray-800 dark:text-white">Synthia</span>
       </div>
 
-      {/* 2. Scrollable Content (Takes remaining space) */}
-      {/* 'flex-1' makes it grow, 'min-h-0' is critical to allow scrolling within a flex child */}
+      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 min-h-0">
-        
-        {/* Main Menu */}
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-2 dark:text-slate-400">Menu</h3>
         <nav className="flex flex-col space-y-1">
           {navItems.map((item) => (
@@ -69,7 +66,6 @@ const Sidebar: React.FC = () => {
           ))}
         </nav>
 
-        {/* Others Menu */}
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-2 mt-6 dark:text-slate-400">Others</h3>
         <nav className="flex flex-col space-y-1 pb-4">
           <NavLink
@@ -90,7 +86,7 @@ const Sidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* 3. Footer / User Profile (Fixed at Bottom) */}
+      {/* Footer */}
       <div className="flex-none border-t border-gray-200 p-4 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
         <NavLink 
           to="/profile" 
@@ -103,9 +99,9 @@ const Sidebar: React.FC = () => {
               className="h-10 w-10 rounded-full border border-gray-200 dark:border-slate-600 object-cover flex-shrink-0" 
             />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-gray-800 dark:text-slate-200 truncate">Peter Parker</p>
+              <p className="text-sm font-semibold text-gray-800 dark:text-slate-200 truncate">Ronhel Andrade</p>
               <p className="text-xs text-gray-500 dark:text-slate-400 truncate group-hover:text-violet-600 transition-colors">
-                peter.park@ati.da.gov.ph
+                andrade.ronhel@qcu.edu.ph
               </p>
             </div>
           </div>

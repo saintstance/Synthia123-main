@@ -36,15 +36,7 @@ const Dashboard: React.FC = () => {
       priority: "High Priority",
       description: "Analyze requirements for the new 'Projects' feature and update the ERD. Create migration scripts to add the 'workspaces' table and establish foreign key constraints."
     },
-    {
-      id: 3,
-      title: "API Integration",
-      status: "Pending",
-      workspace: "Internal Tools",
-      dueDate: "11/25/2025",
-      priority: "Medium",
-      description: "Integrate the third-party calendar API to sync user events. Implement OAuth2 authentication flow and handle token refreshing mechanism."
-    }
+  
   ];
 
   // Lock body scroll when modal is open
@@ -87,7 +79,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="p-6 md:p-8 bg-gray-100 dark:bg-slate-900 min-h-full">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Good Day! User</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Good Day, Ronhel!</h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -99,7 +91,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-medium text-gray-600 mb-2 dark:text-slate-400">Total Tasks</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">12</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">2</p>
                 </div>
                 <button onClick={() => navigate('/tasks')} className="p-2 hover:bg-gray-100 rounded dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400">
                   <CheckSquare className="w-5 h-5" />
@@ -110,7 +102,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-medium text-gray-600 mb-2 dark:text-slate-400">Active Workspaces</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">2</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">1</p>
                 </div>
                 <button onClick={() => navigate('/collaboration')} className="p-2 hover:bg-gray-100 rounded dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400">
                   <Users className="w-5 h-5" />
@@ -121,7 +113,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-medium text-gray-600 mb-2 dark:text-slate-400">Meetings Today</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">3</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
                 </div>
                 <button onClick={() => navigate('/meetings')} className="p-2 hover:bg-gray-100 rounded dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400">
                   <Video className="w-5 h-5" />
