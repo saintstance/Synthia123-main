@@ -104,7 +104,7 @@ const Dashboard: React.FC = () => {
             <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 dark:bg-slate-800 dark:border-slate-700">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-medium text-gray-600 mb-2 dark:text-slate-400">Active Workspaces</p>
+                  <p className="text-xs font-medium text-gray-600 mb-2 dark:text-slate-400">Active Collaboration</p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">1</p>
                 </div>
                 <button onClick={() => navigate('/collaboration')} className="p-2 hover:bg-gray-100 rounded dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400">
@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-start justify-between flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <p className="font-semibold text-gray-900 dark:text-white">Tomorrow, 10:00 AM !</p>
-                <p className="text-sm text-gray-600 mt-1 dark:text-slate-400">Strategic Planning and Policy Alignment Meeting - Q4 2025</p>
+                <p className="text-sm text-gray-600 mt-1 dark:text-slate-400">Final Defense</p>
               </div>
               <button 
                 id="btn-view-briefing" 
@@ -156,7 +156,7 @@ const Dashboard: React.FC = () => {
                   <tr className="border-b border-gray-200 dark:border-slate-700">
                     <th className="px-6 py-4 text-left font-semibold text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">Task Name</th>
                     <th className="px-6 py-4 text-left font-semibold text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">Workspace</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">Collab</th>
                     <th className="px-6 py-4 text-left font-semibold text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">Due Date</th>
                     <th className="px-6 py-4 text-left font-semibold text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">Priority</th>
                     <th className="px-6 py-4 text-left font-semibold text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">Action</th>
@@ -255,7 +255,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs font-bold text-gray-800 dark:text-white">Monthly Meeting</p>
-                  <p className="text-sm text-gray-500 mt-0.5 dark:text-slate-400">Capstone 101 Workspace</p>
+                  <p className="text-sm text-gray-500 mt-0.5 dark:text-slate-400">Capstone 101 </p>
                 </div>
               </div>
               <div className="flex gap-3 pb-2 border-b border-gray-100 last:border-0 dark:border-slate-700">
@@ -401,12 +401,12 @@ const Dashboard: React.FC = () => {
                             <div className="p-1.5 bg-gray-50 dark:bg-slate-700 rounded-md text-gray-500 dark:text-slate-400">
                                 <FileText className="w-4 h-4" />
                             </div>
-                            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Meeting Summary</h4>
+                            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Meeting Agenda</h4>
                         </div>
                         <ul className="list-disc pl-12 space-y-2 text-sm text-gray-600 dark:text-slate-300 marker:text-gray-400">
-                            <li>Confirmed timeline for the Alpha launch (Dec 15th).</li>
-                            <li>Sarah to finalize the slide deck for client presentation.</li>
-                            <li>Pending: Need approval on the new marketing budget.</li>
+                            <li>Fixing the revisions of the main document</li>
+                            <li>Food for the panelists.</li>
+                            <li>Finalized the documents</li>
                         </ul>
                     </div>
 
