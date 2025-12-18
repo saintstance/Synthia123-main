@@ -41,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
              className="px-4 py-2 bg-violet-600 text-white font-medium rounded-lg hover:bg-violet-700 text-sm flex items-center gap-2 transition-colors shadow-md shadow-violet-200 dark:shadow-none"
            >
              <Plus className="w-4 h-4" />
-             <span className="hidden sm:inline">New Event</span>
+             <span className="hidden sm:inline">New Meeting</span>
            </button>
         )}
 
